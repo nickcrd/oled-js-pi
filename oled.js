@@ -66,7 +66,8 @@ var Oled = function(opts) {
 
   // Setup i2c
   console.log('this.ADDRESS: ' + this.ADDRESS);
-  this.wire = new i2c(this.ADDRESS, {device: '/dev/i2c-0'}); // point to your i2c address, debug provides REPL interface
+  // PATCH: Changed i2c-0 to i2c-1 to support Raspberry Pi Zero
+  this.wire = new i2c(this.ADDRESS, {device: '/dev/i2c-1'}); // point to your i2c address, debug provides REPL interface
 
   var screenSize = this.WIDTH + 'x' + this.HEIGHT;
   this.screenConfig = config[screenSize];
@@ -117,10 +118,8 @@ Oled.prototype._transfer = function(type, val, fn) {
 
   // send control and actual val
   // this.board.io.i2cWrite(this.ADDRESS, [control, val]);
-  this.wire.writeByte(control, function(err) {
-    this.wire.writeByte(val, function(err) {
-      fn();
-    });
+  this.wire.write([control, val], function(err) {
+    fn(); 
   });
 }
 
@@ -152,7 +151,7 @@ Oled.prototype._waitUntilReady = function(callback) {
     });
   };
 
-  setTimeout(tick(callback), 0);
+  setTimeout(function(){ tick(callback) }, 0);
 }
 
 // set starting position of a text string on the oled
